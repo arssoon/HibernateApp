@@ -1,110 +1,80 @@
 package dao;
 
 import entity.Employee;
-import factory.HibernateFactory;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import java.util.List;
 
 public class EmployeeDao {
+    private List <Employee> employees;
 
-    public void add(Employee employee) {
-        HibernateFactory hibernateFactory = new HibernateFactory();
-        Session session = hibernateFactory.getSessionFactory().openSession();
-        Transaction transaction = session.beginTransaction();
+    public List<Employee> findBySurname(String surname, Session session)
+    {
+        employees = getEmployees(session, "from Employee where surname=" + surname);
+        return employees;
+    }
+
+    public List<Employee> findByEmail(String email, Session session)
+    {
+        employees = getEmployees(session, "from Employee where email= " + email);
+        return employees;
+    }
+
+    public List<Employee> findById(int id, Session session)
+    {
+        employees = getEmployees(session, "from Employee where id=" + id);
+        return employees;
+    }
+
+    public List<Employee> findAllEmployees(Session session)
+    {
+        employees = getEmployees(session, "from Employee");
+        return employees;
+    }
+
+    public String add(Employee employee, Session session) {
         try {
             session.save(employee);
             session.getTransaction().commit();
+            return "Zapisano użytkownika w bazie";
         } catch (Exception ex) {
-            transaction.rollback();
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
-        } finally {
-            session.close();
+            return "Nie udało się zapisać użytkownika w bazie. " + ex.getMessage();
         }
     }
 
-    public void findBySurname(String surname)
-    {
-        SessionFactory sessionFactory = HibernateFactory.getSessionFactory();
-        Session session = sessionFactory.openSession();
-        session.beginTransaction();
-        Query query = session.createQuery("from Employee where prac_nazwisko=" + surname);
-        showDataEmployees(sessionFactory, session, query);
+    public String update(int id, Employee employeeNew, Session session) {
+        try {
+            Employee employee = session.get(Employee.class, id);
+            employee.setName(employeeNew.getName());
+            employee.setSurname(employeeNew.getSurname());
+            employee.setAge(employeeNew.getAge());
+            employee.setNrPhone(employeeNew.getNrPhone());
+            employee.setEmail(employeeNew.getEmail());
+
+            session.update(employee);
+            session.getTransaction().commit();
+            return "Aktualizacja przebiegła pomyślnie. ";
+        } catch (Exception ex) {
+            return "Nie udało się zaktualizować danych użytkownika. " + ex.getMessage();
+        }
+    }
+    public String delete(int id, Session session) {
+        try {
+            Employee employee = session.get(Employee.class, id);
+            session.delete(employee);
+            session.getTransaction().commit();
+            return "Użytkownik został usunięty. ";
+        } catch (Exception ex) {
+            return "Nie udało się usunąć użytkownika. " + ex.getMessage();
+        }
     }
 
-    public void findByEmail(String email)
-    {
-        SessionFactory sessionFactory = HibernateFactory.getSessionFactory();
-        Session session = sessionFactory.openSession();
-        session.beginTransaction();
-        Query query = session.createQuery("from Employee where prac_email= " + email);
-        showDataEmployees(sessionFactory, session, query);
-    }
-
-    public void findById(int id)
-    {
-        SessionFactory sessionFactory = HibernateFactory.getSessionFactory();
-        Session session = sessionFactory.openSession();
-        session.beginTransaction();
-        Query query = session.createQuery("from Employee where prac_id=" + id);
-        showDataEmployees(sessionFactory, session, query);
-    }
-
-    public void findAllEmployees()
-    {
-        SessionFactory sessionFactory = HibernateFactory.getSessionFactory();
-        Session session = sessionFactory.openSession();
-        session.beginTransaction();
-        Query query = session.createQuery("from Employee");
-        showDataEmployees(sessionFactory, session, query);
-    }
-
-    public void update(int id, Employee employeeNew) {
-        SessionFactory sessionFactory = HibernateFactory.getSessionFactory();
-        Session session = sessionFactory.openSession();
-        session.beginTransaction();
-        Employee employee = session.get(Employee.class, id);
-
-        employee.setName(employeeNew.getName());
-        employee.setSurname(employeeNew.getSurname());
-        employee.setAge(employeeNew.getAge());
-        employee.setNrPhone(employeeNew.getNrPhone());
-        employee.setEmail(employeeNew.getEmail());
-
-        session.update(employee);
-
-        session.getTransaction().commit();
-        sessionFactory.close();
-    }
-    public void delete(int id) {
-        SessionFactory sessionFactory = HibernateFactory.getSessionFactory();
-        Session session = sessionFactory.openSession();
-        session.beginTransaction();
-
-        Employee employee = session.get(Employee.class, id);
-        session.delete(employee);
-
-        session.getTransaction().commit();
-        sessionFactory.close();
-    }
-
-    private void showDataEmployees(SessionFactory sessionFactory, Session session, Query query) {
+    private List <Employee> getEmployees(Session session, String queryString) {
+        Query query = session.createQuery(queryString);
         List<Employee> employees = query.list();
-        for (Employee employee : employees) {
-            System.out.println(employee.getId() + " " +
-                    employee.getName() + " " +
-                    employee.getSurname() + " " +
-                    employee.getAge() + " " +
-                    employee.getNrPhone() + " " +
-                    employee.getEmail()
-            );
-        }
-        session.getTransaction().commit();
-        sessionFactory.close();
+
+        return employees;
     }
 
 }

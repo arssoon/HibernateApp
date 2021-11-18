@@ -78,13 +78,11 @@ public class Employee {
 
     @Override
     public String toString() {
-        return "entity.Employee{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                ", surname='" + surname + '\'' +
-                ", age=" + age +
-                ", nrPhone='" + nrPhone + '\'' +
-                ", email='" + email + '\'' +
-                '}';
+        return  "id = " + id + " | " +
+                "name = " + name + " | " +
+                "surname = " + surname + " | " +
+                "age = " + age + " | " +
+                "nr_phone = " + nrPhone  + " | " +
+                "email = " + email;
     }
 }
